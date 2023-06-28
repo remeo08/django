@@ -1,0 +1,11 @@
+<h1>ALL BOARDS</h1>
+
+<h3>상태: {{ status }}</h3>
+
+<h3>게시글 데이터: {{ datas }}</h3>
+
+<ul>
+    {% for i in datas %}
+    <li>{{ i.content }}, {{ i.like_num }}, {{ i.writer }}</li>
+    {% endfor %}
+</ul>
