@@ -29,19 +29,24 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+CUSTOM_USER_APPS =[
+    'boards.apps.BoardsConfig',
+    'reviews.apps.ReviewsConfig',
+    'users.apps.UsersConfig',
+    'chattings.apps.ChattingsConfig',
+    'rest_framework'
+]
 
-INSTALLED_APPS = [
+DJANGO_SYSTEM_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'boards.apps.BoardsConfig',
-    'reviews.apps.ReviewsConfig',
-    'users.apps.UsersConfig',
-    'chattings.apps.ChattingsConfig'
 ]
+
+INSTALLED_APPS = CUSTOM_USER_APPS + DJANGO_SYSTEM_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
