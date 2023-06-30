@@ -37,8 +37,12 @@ from rest_framework.response import Response  # 클라이언트로 데이터를 
 from rest_framework.exceptions import NotFound   # 데이터가 찾지 못한 경우 내려주는 거
 from .models import Board
 from .serializers import BoardSerializer
+from rest_framework.exceptions import NotAuthenticated
+from rest_framework.status import HTTP_204_NO_CONTENT
+
 
 # GET:전체 게시글 불러오기
+# POST: 게시글 작성하기(create)
 class Boards(APIView):
     def get(self,request):
 
@@ -50,6 +54,24 @@ class Boards(APIView):
 
         return Response(serializer.data)   
     
+
+
+    def post(self, request):
+        # 장고 객체 -> JSON
+        # 리액트가 보내주는 데이터: JSON -> 장곡객체(역직렬화)
+        if request.user.is_authenticated:
+            serializer = BoardSerializer(data=request.data)  # JSON을 objects(객체)로
+
+            if serializer.is_valid():
+                board = serializer.save(users=request.user)   # 데이터 저장
+                serializer = BoardSerializer(board)   # 직렬화(Objects -> JSON)
+
+                return Response(serializer.data)
+        
+            else:
+                return Response(serializer.errors)
+        else:
+            raise NotAuthenticated
 
 
 # GET: 유저로부터 입력바든 id 값의 게시글 데이터 불러오기
@@ -66,5 +88,50 @@ class BoardDetail(APIView):
         print(serializer)
 
         return Response(serializer.data)
+    
 
+
+    def put(self, request, board_id):
+        board = Board.objects.get(id = board_id)
+
+        if request.user != board.users:
+            raise PermissionError
+        
+        serializer = BoardSerializer(
+            board,
+            data=request.data,
+            context={"request":request},
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
+
+
+
+    
+    def delete(self, request, board_id):
+        board = Board.objects.get(id=board_id)
+
+        # if request.user.is_authenticated:
+        #     raise NotAuthenticated
+        
+        if request.user != board.users:   # 로그인한 유저랑 글을 작성한 유저가 다르면
+            raise PermissionError
+        
+        board.delete()
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
+        # 지운다.
+        # 본인이 작성한 게시글만 지울 수 있다.
+        # 로그인 하지 않은 사용자도 해당 api도 사용할 수 없다.
+
+
+
+
+# api
 
